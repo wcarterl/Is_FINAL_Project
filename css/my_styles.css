@@ -1,0 +1,22 @@
+.my_special_text {
+text-decoration: underline;
+
+}
+
+
+/* adding important overrides other css file */
+.my_background_color {
+
+    background-color: rgb(5, 5, 87) !important;
+}
+
+
+.my_text_color {
+
+    text-emphasis-color: rgb(5, 5, 87) !important;
+}
+
+.my_list_font {
+
+font-size: smaller !important;    
+}

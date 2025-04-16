@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Priority Task Focus - Refreshed</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700&family=Poppins:wght@500;600;700&display=swap" rel="stylesheet">
+
+    <a href="pages/from_scratch.html">Link to Scratch Page</a>
+
+    <style>
+        /* --- Base & Animations --- */
+        :root {
+            --primary-color-dark: #5a3a8a;
+            --primary-color-light: #764ba2;
+            --accent-green: #28a745;
+            --accent-green-dark: #218838;
+            --accent-blue: #007bff;
+            --accent-blue-dark: #0056b3;
+            --text-dark: #343a40;
+            --text-light: #6c757d;
+            --bg-light: #f8f9fa;
+            --border-color: #dee2e6;
+            --container-bg: rgba(255, 255, 255, 0.85); /* More opaque */
+        }
+
+        @keyframes fadeInDown {
+            from { opacity: 0; transform: translateY(-15px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes popIn {
+             0% { opacity: 0; transform: scale(0.8); }
+             100% { opacity: 1; transform: scale(1); }
+        }
+         @keyframes taskAdded {
+             0% { opacity: 0; transform: translateX(-20px); }
+             100% { opacity: 1; transform: translateX(0); }
+        }
+        /* FadeOutUp animation remains the same */
+         @keyframes fadeOutUp {
+             from { opacity: 1; transform: translateY(0); }
+             to { opacity: 0; transform: translateY(-30px); }
+         }
+
+
+        /* --- Body & Global --- */
+        body {
+            font-family: 'Lato', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            line-height: 1.7; /* Slightly increased line height */
+            /* Slightly softer gradient */
+            background: linear-gradient(135deg, #6e8efb 0%, #a777e3 100%);
+            color: var(--text-dark);
+            margin: 0;
+            padding: 25px; /* Consistent padding */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            box-sizing: border-box;
+        }
+
+        h2, h3 {
+            font-family: 'Poppins', sans-serif;
+            font-weight: 600;
+            margin-bottom: 18px; /* Consistent heading margin */
+        }
+
+        /* --- Containers --- */
+        .main-container, #inputArea, #upcomingTasksArea {
+            background-color: var(--container-bg);
+            /* Frosted glass effect (subtle) */
+            backdrop-filter: blur(6px);
+            -webkit-backdrop-filter: blur(6px); /* Safari */
+            padding: 35px 45px;
+            border-radius: 16px; /* More rounded */
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1); /* Softer shadow */
+            width: 90%;
+            max-width: 600px; /* Slightly wider max */
+            text-align: center;
+            margin-bottom: 25px;
+            border: 1px solid rgba(255, 255, 255, 0.2); /* Subtle border */
+            box-sizing: border-box;
+        }
+
+        .main-container {
+             animation: fadeInDown 0.7s cubic-bezier(0.25, 0.46, 0.45, 0.94); /* Smoother ease */
+        }
+        #inputArea, #upcomingTasksArea {
+            animation: fadeInDown 0.7s 0.1s cubic-bezier(0.25, 0.46, 0.45, 0.94) backwards; /* Staggered animation */
+        }
+
+        /* --- Quote --- */
+        #quoteDisplay {
+            font-style: italic;
+            color: var(--text-light);
+            margin-bottom: 30px;
+            padding: 15px 20px;
+            background-color: rgba(241, 243, 245, 0.7); /* Slightly transparent bg */
+            border-radius: 8px;
+            font-size: 1rem;
+            min-height: 45px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-left: 4px solid var(--primary-color-light); /* Accent border */
+        }
+
+        /* --- Current Task --- */
+        #currentTaskArea {
+            border: none; /* Remove default border */
+            background-color: rgba(248, 240, 255, 0.7); /* Lighter tint */
+            padding: 30px;
+            margin-bottom: 30px;
+            border-radius: 12px; /* Consistent rounding */
+             box-shadow: inset 0 0 15px rgba(90, 58, 138, 0.05); /* Inner shadow */
+        }
+
+        #currentTaskArea h2 {
+            margin-top: 0;
+            color: var(--primary-color-dark);
+            font-weight: 700; /* Bolder heading */
+            font-size: 1.6rem;
+        }
+
+        #currentTaskText {
+            font-size: 1.5rem;
+            font-weight: 500; /* Slightly bolder */
+            color: var(--text-dark);
+            margin-bottom: 25px;
+            min-height: 35px;
+            word-wrap: break-word;
+            line-height: 1.4; /* Ensure good line height for long tasks */
+        }
+
+        #noTaskMessage {
+             color: var(--text-light);
+             font-size: 1.2rem;
+             font-weight: 500;
+             padding: 40px 15px;
+         }
+
+        /* --- Input Area --- */
+         #inputArea {
+             display: flex;
+             gap: 12px;
+             padding: 25px; /* Adjusted padding */
+         }
+
+        #taskInput {
+            flex-grow: 1;
+            padding: 12px 15px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 1rem;
+            font-family: inherit; /* Use body font */
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+        #taskInput:focus {
+            outline: none;
+            border-color: var(--primary-color-light);
+            box-shadow: 0 0 0 3px rgba(118, 75, 162, 0.2); /* Focus ring */
+        }
+
+        /* --- Buttons --- */
+        button {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 8px; /* Match input */
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600; /* Bolder text */
+            font-family: 'Poppins', sans-serif; /* Button font */
+            transition: background-color 0.2s ease, transform 0.1s ease, box-shadow 0.2s ease;
+            display: inline-flex; /* Align icon and text */
+            align-items: center;
+            gap: 8px; /* Space between icon and text */
+            white-space: nowrap;
+        }
+        button:active {
+             transform: scale(0.97);
+         }
+
+        #completeButton {
+            background-color: var(--accent-green);
+            color: white;
+            display: block; /* Keep full width */
+            width: 100%;
+            box-sizing: border-box;
+            justify-content: center; /* Center icon/text */
+            font-size: 1.1rem; /* Slightly larger */
+        }
+        #completeButton:hover {
+            background-color: var(--accent-green-dark);
+             box-shadow: 0 4px 10px rgba(40, 167, 69, 0.3);
+        }
+        #completeButton::before { /* Simple checkmark icon */
+            content: '✔';
+            font-weight: bold;
+            margin-right: 5px; /* Keep gap consistent */
+        }
+
+
+        #addButton {
+            background-color: var(--accent-blue);
+            color: white;
+        }
+        #addButton:hover {
+            background-color: var(--accent-blue-dark);
+             box-shadow: 0 4px 10px rgba(0, 123, 255, 0.3);
+        }
+         #addButton::before { /* Simple plus icon */
+             content: '+';
+             font-weight: bold;
+             font-size: 1.2em; /* Make plus slightly larger */
+             line-height: 1;
+         }
+
+
+        /* --- Upcoming Tasks --- */
+        #upcomingTasksArea {
+             /* Inherits .main-container styles, specific adjustments: */
+             padding: 25px 30px; /* Adjust padding */
+             text-align: left; /* Align list content left */
+         }
+        #upcomingTasksArea h3 {
+             text-align: center; /* Center heading */
+             margin-top: 0;
+             margin-bottom: 20px;
+             color: var(--text-dark);
+             border-bottom: 1px solid var(--border-color);
+             padding-bottom: 10px;
+         }
+        #upcomingTaskList {
+             list-style: none;
+             padding: 0;
+             margin: 0;
+         }
+        #upcomingTaskList li {
+            background-color: var(--bg-light);
+            padding: 10px 15px;
+            margin-bottom: 8px;
+            border-radius: 6px;
+            font-size: 0.95rem;
+            color: var(--text-dark);
+            word-wrap: break-word;
+            border: 1px solid var(--border-color);
+            transition: background-color 0.2s ease, transform 0.2s ease;
+            animation: taskAdded 0.4s ease-out; /* Animate adding */
+         }
+         #upcomingTaskList li:hover {
+             background-color: #e9ecef; /* Slightly darker on hover */
+             transform: translateX(3px); /* Slight move effect */
+         }
+        #upcomingTaskList li:last-child {
+            margin-bottom: 0;
+        }
+
+        /* --- Celebration --- */
+         #celebrationZone {
+             /* Existing styles are fine, maybe adjust font */
+             font-family: 'Poppins', sans-serif;
+             /* Ensure position is relative to viewport */
+             position: fixed;
+             top: 15%; /* Adjust position if needed */
+             left: 50%;
+             transform: translateX(-50%);
+             background-color: var(--accent-green);
+             color: white;
+             padding: 18px 35px; /* Slightly bigger padding */
+             border-radius: 12px;
+             font-size: 1.4rem;
+             font-weight: 600; /* Poppins bold */
+             z-index: 1000;
+             display: none;
+             box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+         }
+         #celebrationZone.show {
+             display: block;
+             /* Existing animation should work well */
+             animation: popIn 0.4s ease-out forwards, fadeOutUp 0.5s ease-in 1.5s forwards;
+         }
+
+        /* --- Footer for External Link --- */
+        .app-footer {
+            margin-top: 40px; /* Space above footer */
+            padding: 15px;
+            text-align: center;
+            width: 100%;
+            max-width: 600px; /* Match container width */
+            color: rgba(255, 255, 255, 0.7); /* Light text on gradient */
+            font-size: 0.9rem;
+        }
+        .app-footer a {
+            color: rgba(255, 255, 255, 0.9); /* Brighter link color */
+            text-decoration: underline;
+            font-weight: bold;
+            transition: color 0.2s ease;
+        }
+        .app-footer a:hover {
+            color: #ffffff; /* White on hover */
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="main-container">
+        <div id="quoteDisplay">Loading quote...</div>
+
+        <div id="currentTaskArea">
+            <h2>Your Next Priority!</h2>
+            <div id="currentTaskText">(No tasks yet!)</div>
+            <button id="completeButton">Mark Complete & Get Next!</button>
+        </div>
+
+        <div id="noTaskMessage" style="display: none;">
+            All tasks complete! Add a new one below. 🎉
+        </div>
+    </div>
+
+    <div id="inputArea">
+        <input type="text" id="taskInput" placeholder="Add a new task to the queue...">
+        <button id="addButton">Add Task</button>
+    </div>
+
+    <div id="upcomingTasksArea" style="display: none;">
+        <h3>Up Next</h3>
+        <ul id="upcomingTaskList"></ul>
+    </div>
+
+    <div id="celebrationZone">Task Complete! ✨</div>
+
+    <footer class="app-footer">
+        <p>
+            | Created with focus! &copy; 2025
+             </p>
+    </footer>
+
+
+    <script>
+        // --- Data ---
+        let tasks = []; // Array to hold task strings
+        const quotes = [
+            "The journey of a thousand miles begins with one step.",
+            "Focus on being productive instead of busy.",
+            "The key is not to prioritize what's on your schedule, but to schedule your priorities.",
+            "Do the hard jobs first. The easy jobs will take care of themselves.",
+            "Success is the sum of small efforts, repeated day in and day out.",
+            "Well begun is half done.",
+            "Action is the foundational key to all success.",
+            "Your future is created by what you do today, not tomorrow.",
+            "The secret of getting ahead is getting started.",
+            "Don't watch the clock; do what it does. Keep going."
+        ];
+
+        // --- DOM Elements ---
+        const quoteDisplay = document.getElementById('quoteDisplay');
+        const currentTaskArea = document.getElementById('currentTaskArea');
+        const currentTaskText = document.getElementById('currentTaskText');
+        const noTaskMessage = document.getElementById('noTaskMessage');
+        const completeButton = document.getElementById('completeButton');
+        const taskInput = document.getElementById('taskInput');
+        const addButton = document.getElementById('addButton');
+        const upcomingTasksArea = document.getElementById('upcomingTasksArea');
+        const upcomingTaskList = document.getElementById('upcomingTaskList');
+        const celebrationZone = document.getElementById('celebrationZone');
+
+        // --- Event Listeners ---
+        document.addEventListener('DOMContentLoaded', initializeApp);
+        addButton.addEventListener('click', addTask);
+        taskInput.addEventListener('keypress', function(event) {
+            if (event.key === 'Enter') {
+                addTask();
+            }
+        });
+        completeButton.addEventListener('click', completeCurrentTask);
+
+        // --- Functions ---
+        function initializeApp() {
+            loadTasks();
+            displayQuote();
+            updateDisplay();
+        }
+
+        function displayQuote() {
+            const randomIndex = Math.floor(Math.random() * quotes.length);
+            quoteDisplay.textContent = `"${quotes[randomIndex]}"`;
+        }
+
+        function addTask() {
+            const taskText = taskInput.value.trim();
+            if (taskText === '') {
+                alert('Please enter a task description.');
+                return;
+            }
+            tasks.push(taskText); // Add to the end of the queue
+            taskInput.value = '';
+            saveTasks();
+            updateDisplay();
+
+             // Focus input again after adding
+             taskInput.focus();
+        }
+
+        function completeCurrentTask() {
+            if (tasks.length === 0) {
+                return; // No task to complete
+            }
+            showCelebration();
+            tasks.shift(); // Remove the first task (the current one)
+            saveTasks();
+            displayQuote(); // Show a new quote
+            // Add a small delay before updating display to let celebration be seen
+            setTimeout(updateDisplay, 300);
+        }
+
+        function updateDisplay() {
+            // Display Current Task / No Task Message
+            if (tasks.length > 0) {
+                currentTaskArea.style.display = 'block';
+                noTaskMessage.style.display = 'none';
+                currentTaskText.textContent = tasks[0];
+                 completeButton.disabled = false; // Enable button
+            } else {
+                currentTaskArea.style.display = 'none';
+                noTaskMessage.style.display = 'block';
+                completeButton.disabled = true; // Disable button if no tasks
+            }
+
+            // Display Upcoming Tasks
+            upcomingTaskList.innerHTML = ''; // Clear previous list
+            if (tasks.length > 1) {
+                upcomingTasksArea.style.display = 'block';
+                // Start loop from the second task (index 1)
+                for (let i = 1; i < tasks.length; i++) {
+                    const li = document.createElement('li');
+                    li.textContent = tasks[i];
+                    upcomingTaskList.appendChild(li);
+                }
+            } else {
+                upcomingTasksArea.style.display = 'none';
+            }
+        }
+
+        function showCelebration() {
+             // Randomize celebration text slightly
+            const celebrations = ["Task Complete! ✨", "Awesome Job! 🎉", "You Did It! ✔️", "Great Work! 👍", "Nicely Done! 😊"];
+            celebrationZone.textContent = celebrations[Math.floor(Math.random() * celebrations.length)];
+
+            celebrationZone.classList.add('show');
+            // Remove class after animation finishes (pop + fade durations)
+            setTimeout(() => {
+                celebrationZone.classList.remove('show');
+            }, 2000); // Match total animation duration (0.4s + 1.1s delay + 0.5s)
+        }
+
+        function saveTasks() {
+            localStorage.setItem('priorityTasks', JSON.stringify(tasks));
+        }
+
+        function loadTasks() {
+            const storedTasks = localStorage.getItem('priorityTasks');
+            if (storedTasks) {
+                tasks = JSON.parse(storedTasks);
+            } else {
+                tasks = []; // Initialize empty if nothing is stored
+            }
+        }
+
+    </script>
+
+</body>
+</html>
